@@ -4,6 +4,9 @@ export const APP_TITLE = "Phone Book – Online Phone Book for your contacts";
 export const APP_DESCRIPTION =
   "Online Phone Book keeps a safe copy of your phone contacts online. Phone spoiled or lost? Log in from any phone and get any number.";
 
+// TODO(owner): put the real support email here before launch.
+export const CONTACT_EMAIL = "hello@example.com";
+
 // Web session rules (rule 3: short sessions, no "remember me").
 export const SESSION_IDLE_MINUTES = 30;
 export const SESSION_MAX_MINUTES = 60;

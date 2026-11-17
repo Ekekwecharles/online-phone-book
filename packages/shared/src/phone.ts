@@ -24,6 +24,12 @@ export function looksLikePhone(input: string): boolean {
   return /^[+\d][\d\s\-().+]{6,}$/.test(input.trim());
 }
 
+/** Show +2348031234567 as 0803 123 4567. Other numbers are shown as they are. */
+export function formatPhone(p: string): string {
+  const m = /^\+234(\d{3})(\d{3})(\d{4})$/.exec(p);
+  return m ? `0${m[1]} ${m[2]} ${m[3]}` : p;
+}
+
 /** Does a contact match what the user typed? Name, or any part of the number (0803... or +234803... both work). */
 export function matchesQuery(name: string, phone: string, q: string): boolean {
   const needle = q.trim().toLowerCase();
