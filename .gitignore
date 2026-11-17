@@ -7,3 +7,4 @@ next-env.d.ts
 .env.*.local
 .expo
 dist
+apps/web/.data

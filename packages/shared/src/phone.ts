@@ -24,6 +24,18 @@ export function looksLikePhone(input: string): boolean {
   return /^[+\d][\d\s\-().+]{6,}$/.test(input.trim());
 }
 
+/** Does a contact match what the user typed? Name, or any part of the number (0803... or +234803... both work). */
+export function matchesQuery(name: string, phone: string, q: string): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  if (name.toLowerCase().includes(needle)) return true;
+  let digits = needle.replace(/\D/g, "");
+  if (digits.length < 3) return false;
+  if (digits.startsWith("234")) digits = digits.slice(3);
+  else if (digits.startsWith("0")) digits = digits.slice(1);
+  return digits.length >= 2 && phone.replace(/\D/g, "").includes(digits);
+}
+
 /** For contacts: keep any number, even a foreign one, as clean digits. */
 export function normalizeAnyPhone(input: string): string | null {
   const ng = normalizeNgPhone(input);

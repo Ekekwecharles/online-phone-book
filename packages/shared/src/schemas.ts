@@ -43,13 +43,15 @@ export const signupInput = z.object({
   phone: ngPhone.optional().or(z.literal("").transform(() => undefined)),
   password,
   email: email.optional().or(z.literal("").transform(() => undefined)),
+  client: z.enum(["web", "mobile"]).default("web"),
+  deviceId: z.string().max(100).optional(),
 });
 
 export const loginInput = z.object({
   identifier,
   password: z.string().min(1, "Type your password.").max(100),
+  client: z.enum(["web", "mobile"]).default("web"),
   deviceId: z.string().max(100).optional(),
-  deviceName: z.string().max(100).optional(),
 });
 
 export const contactInput = z.object({

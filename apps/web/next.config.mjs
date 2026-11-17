@@ -20,7 +20,7 @@ const noStore = [
 export default {
   transpilePackages: ["@phonebook/shared"],
   poweredByHeader: false,
-  serverExternalPackages: ["@node-rs/argon2"],
+  serverExternalPackages: ["@node-rs/argon2", "@electric-sql/pglite"],
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
