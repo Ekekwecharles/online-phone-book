@@ -1,0 +1,10 @@
+{
+  "name": "phone-book",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "npm run dev -w @phonebook/web",
+    "build": "npm run build -w @phonebook/web",
+    "test": "npm test -w @phonebook/shared -w @phonebook/web"
+  }
+}
