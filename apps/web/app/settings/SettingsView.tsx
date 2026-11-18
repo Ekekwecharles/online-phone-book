@@ -7,8 +7,11 @@ import { btnDanger, btnLight, btnPrimary } from "@/lib/ui";
 type Msg = { kind: "ok" | "error"; text: string } | null;
 const Show = ({ m }: { m: Msg }) => (m ? <Alert kind={m.kind}>{m.text}</Alert> : null);
 
-function Recovery({ initialEmail, hasRecoveryPhone }: { initialEmail: string; hasRecoveryPhone: boolean }) {
+function Recovery({ initialEmail, initialChecked, hasRecoveryPhone }: { initialEmail: string; initialChecked: boolean; hasRecoveryPhone: boolean }) {
   const [email, setEmail] = useState(initialEmail);
+  const [saved, setSaved] = useState(initialEmail); // the email on the account now
+  const [checked, setChecked] = useState(initialChecked);
+  const [code, setCode] = useState("");
   const [phone, setPhone] = useState("");
   const [msg, setMsg] = useState<Msg>(null);
   const [busy, setBusy] = useState(false);
@@ -17,13 +20,51 @@ function Recovery({ initialEmail, hasRecoveryPhone }: { initialEmail: string; ha
     setBusy(true);
     const body: Record<string, string> = { email };
     if (phone) body.recoveryPhone = phone;
-    const r = await api("PATCH", "/me", body);
-    setMsg(r.ok ? { kind: "ok", text: "Saved." } : { kind: "error", text: r.error });
-    if (r.ok) setPhone("");
+    const r = await api<{ codeSent?: boolean }>("PATCH", "/me", body);
+    if (r.ok) {
+      const changed = email.trim().toLowerCase() !== saved;
+      if (changed) {
+        setSaved(email.trim().toLowerCase());
+        setChecked(false);
+        setCode("");
+      }
+      setMsg({
+        kind: "ok",
+        text: changed && email.trim() ? (r.data.codeSent ? "Saved. We sent a code to your email. Type it below to check your email." : "Saved. We could not send the code now. Tap “Send the code again” below.") : "Saved.",
+      });
+      setPhone("");
+    } else setMsg({ kind: "error", text: r.error });
+    setBusy(false);
+  }
+  async function confirm(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const r = await api("POST", "/me/email/confirm", { code });
+    if (r.ok) {
+      setChecked(true);
+      setMsg({ kind: "ok", text: "Your email is checked. Thank you." });
+    } else setMsg({ kind: "error", text: r.error });
+    setBusy(false);
+  }
+  async function resend() {
+    setBusy(true);
+    const r = await api("POST", "/me/email/send");
+    setMsg(r.ok ? { kind: "ok", text: "We sent a new code. It can take a minute." } : { kind: "error", text: r.error });
     setBusy(false);
   }
   return (
     <Card title="Email and recovery">
+      {saved && !checked && (
+        <>
+          <Alert kind="info">Your email is not checked yet. We do not use it until you check it. Type the 6-number code we sent to {saved}.</Alert>
+          <form method="post" onSubmit={confirm} className="space-y-4">
+            <Field id="ecode" label="Code from your email" inputMode="numeric" value={code} onChange={setCode} maxLength={6} required />
+            <button type="submit" disabled={busy} className={`${btnPrimary} w-full`}>Check my email</button>
+            <button type="button" disabled={busy} onClick={resend} className={`${btnLight} w-full`}>Send the code again</button>
+          </form>
+        </>
+      )}
+      {saved && checked && <Alert kind="ok">Your email is checked.</Alert>}
       <form method="post" onSubmit={save} className="space-y-4">
         <Field id="email" label="Email" type="email" inputMode="email" value={email} onChange={setEmail} autoComplete="email" hint="So we can tell you if someone opens your account. We also use it if you forget your password. To remove it, clear the box and save." />
         <Field
@@ -152,11 +193,11 @@ function Delete() {
   );
 }
 
-export default function SettingsView({ username, email, hasRecoveryPhone }: { username: string; email: string; hasRecoveryPhone: boolean }) {
+export default function SettingsView({ username, email, emailChecked, hasRecoveryPhone }: { username: string; email: string; emailChecked: boolean; hasRecoveryPhone: boolean }) {
   return (
     <div className="space-y-5">
       <p>Logged in as <b>{username}</b>.</p>
-      <Recovery initialEmail={email} hasRecoveryPhone={hasRecoveryPhone} />
+      <Recovery initialEmail={email} initialChecked={emailChecked} hasRecoveryPhone={hasRecoveryPhone} />
       <Password />
       <NewCode />
       <LogoutAll />

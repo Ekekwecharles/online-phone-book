@@ -6,6 +6,7 @@ import { ApiError, clientIp, json, route } from "@/lib/http";
 import { createUser, startSession } from "@/lib/accounts";
 import { hit } from "@/lib/ratelimit";
 import { recordLogin } from "@/lib/notices";
+import { sendVerifyCode } from "@/lib/emailVerify";
 
 export const POST = route({ auth: false }, async ({ req, body }) => {
   if ((await hit(`signup:${clientIp(req)}`, 3600)) > 10) {
@@ -23,8 +24,9 @@ export const POST = route({ auth: false }, async ({ req, body }) => {
   const { user, recoveryCode } = await createUser(i);
   const s = await startSession(user.id, i.client);
   await recordLogin({ user, kind: i.client, req, deviceId: i.deviceId, silent: true });
+  const codeSent = user.email ? await sendVerifyCode(user) : false; // never blocks signup
   return json(
-    { ok: true, token: s.token, recoveryCode, askForEmail: !user.email },
+    { ok: true, token: s.token, recoveryCode, askForEmail: !user.email, emailCodeSent: codeSent },
     201,
     s.cookie ? { "set-cookie": s.cookie } : {},
   );

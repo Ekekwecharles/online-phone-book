@@ -1,6 +1,6 @@
 import { bigint, boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
-// Keep this file in step with migrations/0001_init.sql.
+// Keep this file in step with the files in migrations/.
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -9,7 +9,8 @@ export const users = pgTable("users", {
   phoneEnc: text("phone_enc"),
   passwordHash: text("password_hash").notNull(),
   wrappedKey: text("wrapped_key").notNull(), // this user's data key, locked with MASTER_KEY
-  email: text("email"), // used for login notices and recovery codes
+  email: text("email"), // used for login notices and recovery codes, but only once verified
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   recoveryPhoneEnc: text("recovery_phone_enc"), // stored for later; no SMS yet
   recoveryCodeHash: text("recovery_code_hash").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -75,7 +76,15 @@ export const rateLimits = pgTable("rate_limits", {
   windowStart: timestamp("window_start", { withTimezone: true }).notNull().defaultNow(),
 });
 
-export const emailCodes = pgTable("email_codes", {
+export const emailVerifications = pgTable("email_verifications", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  attempts: integer("attempts").notNull().default(0),
+});
+
+export const emailCodes =pgTable("email_codes", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
   codeHash: text("code_hash").notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),

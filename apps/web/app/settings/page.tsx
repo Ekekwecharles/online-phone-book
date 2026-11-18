@@ -14,7 +14,7 @@ export default async function Page() {
     <AppShell current="/settings">
       <AutoLogout />
       <h1 className="text-3xl font-extrabold text-brand-900">Settings</h1>
-      <SettingsView username={auth.user.username} email={auth.user.email ?? ""} hasRecoveryPhone={!!auth.user.recoveryPhoneEnc} />
+      <SettingsView username={auth.user.username} email={auth.user.email ?? ""} emailChecked={!!auth.user.emailVerifiedAt}hasRecoveryPhone={!!auth.user.recoveryPhoneEnc} />
     </AppShell>
   );
 }

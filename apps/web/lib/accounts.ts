@@ -58,5 +58,5 @@ export async function startSession(userId: string, kind: SessionKind) {
 }
 
 export function publicUser(u: User) {
-  return { username: u.username, hasPhone: !!u.phoneIdx, email: u.email, hasRecoveryPhone: !!u.recoveryPhoneEnc };
+  return { username: u.username, hasPhone: !!u.phoneIdx, email: u.email, emailChecked: !!u.emailVerifiedAt, hasRecoveryPhone: !!u.recoveryPhoneEnc };
 }

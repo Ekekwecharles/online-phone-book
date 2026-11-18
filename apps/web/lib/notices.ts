@@ -4,6 +4,7 @@ import { getDb, t } from "./db";
 import { randomToken, sha256 } from "./crypto";
 import { sendMail } from "./mailer";
 import { deviceType, roughPlace } from "./http";
+import { verifiedEmail } from "./emailVerify";
 import type { User } from "./session";
 
 export type LoginKind = "web" | "mobile" | "recovery";
@@ -57,7 +58,7 @@ export async function recordLogin(opts: { user: User; kind: LoginKind; req: Requ
 
   const email = !opts.silent && shouldEmail({
     kind,
-    hasEmail: !!user.email,
+    hasEmail: !!verifiedEmail(user),
     deviceSeenBefore: !!deviceId && past.some((p) => p.deviceId === deviceId),
     placeSeenBefore: past.some((p) => p.place === place),
     emailedRecently: recent.length > 0,
@@ -74,11 +75,12 @@ export async function recordLogin(opts: { user: User; kind: LoginKind; req: Requ
     wasntMeHash: sha256(wasntMe),
   });
 
-  if (email && user.email) {
+  const to = verifiedEmail(user);
+  if (email && to) {
     const base = process.env.APP_URL ?? "";
     const what = kind === "recovery" ? "Your password was reset." : "Someone logged into your account.";
     const sent = await sendMail({
-      to: user.email,
+      to,
       subject: `${APP_NAME}: new login`,
       text: [
         what,

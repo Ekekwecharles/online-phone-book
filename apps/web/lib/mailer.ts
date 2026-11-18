@@ -31,8 +31,9 @@ class BrevoMailer implements Mailer {
 // Used when no email key is set. Prints to the server console in development only.
 class ConsoleMailer implements Mailer {
   async send(m: Mail): Promise<boolean> {
-    if (process.env.NODE_ENV !== "production") console.log(`\n[email to ${m.to}] ${m.subject}\n${m.text}\n`);
-    return false;
+    if (process.env.NODE_ENV === "production") return false; // nothing is sent, so say so
+    console.log(`\n[email to ${m.to}] ${m.subject}\n${m.text}\n`);
+    return true; // dev only: pretend it was sent so the whole flow can be tested
   }
 }
 

@@ -1,4 +1,4 @@
-# Phone Book
+﻿# Phone Book
 
 An online phone book. It keeps a safe copy of your phone contacts online. If your phone is
 spoiled, stolen or lost, log in from any phone or browser and get any number.
@@ -7,9 +7,9 @@ The product name is set in one place: `APP_NAME` in `packages/shared/src/config.
 
 ## Folders
 
-- `apps/web` – website and API (Next.js, App Router, Tailwind)
-- `apps/mobile` – Android and iPhone app (Expo). Not built yet (Phase 2).
-- `packages/shared` – code used by both: phone number cleaning, input checks, settings
+- `apps/web` â€“ website and API (Next.js, App Router, Tailwind)
+- `apps/mobile` â€“ Android and iPhone app (Expo). Not built yet (Phase 2).
+- `packages/shared` â€“ code used by both: phone number cleaning, input checks, settings
 
 ## Run it on your computer
 
@@ -60,5 +60,5 @@ No SMS. SMS costs money. `SmsSender` in `apps/web/lib/mailer.ts` is an empty slo
 
 ## Database
 
-Tables are in `apps/web/lib/db/migrations/0001_init.sql`. To set up Neon, run that file once
-in the Neon SQL editor (use the direct connection). Keep `lib/db/schema.ts` in step with it.
+Tables are in `apps/web/lib/db/migrations/` (`0001_init.sql`, then `0002_email_verify.sql`). To set up Neon, run each file once, in order,`n in the Neon SQL editor (use the direct connection). Keep `lib/db/schema.ts` in step with it.
+

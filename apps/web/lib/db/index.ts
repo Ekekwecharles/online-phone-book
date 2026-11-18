@@ -41,8 +41,10 @@ async function connect(): Promise<Db> {
   const dir = process.env.PGLITE_DIR ?? path.join(process.cwd(), ".data", "pglite");
   if (dir !== "memory") fs.mkdirSync(path.dirname(dir), { recursive: true }); // PGlite makes the last folder itself
   const client = dir === "memory" ? new PGlite() : new PGlite(dir);
-  const sqlText = fs.readFileSync(path.join(process.cwd(), "lib", "db", "migrations", "0001_init.sql"), "utf8");
-  await client.exec(sqlText);
+  const mdir = path.join(process.cwd(), "lib", "db", "migrations");
+  for (const f of fs.readdirSync(mdir).filter((x) => x.endsWith(".sql")).sort()) {
+    await client.exec(fs.readFileSync(path.join(mdir, f), "utf8")); // every file can safely run again
+  }
   return drizzlePglite(client, { schema }) as unknown as Db;
 }
 

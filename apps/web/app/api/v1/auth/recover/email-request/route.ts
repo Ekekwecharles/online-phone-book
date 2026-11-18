@@ -7,9 +7,10 @@ import { sha256, sixDigitCode } from "@/lib/crypto";
 import { getDb, t } from "@/lib/db";
 import { sendMail } from "@/lib/mailer";
 import { hit } from "@/lib/ratelimit";
+import { verifiedEmail } from "@/lib/emailVerify";
 
 // Same answer whether or not the account or email exists.
-const SAME = { ok: true, message: "If this account has a recovery email, we sent a code to it. It works for 15 minutes." };
+const SAME = { ok: true, message: "If this account has a checked email, we sent a code to it. It works for 15 minutes." };
 
 export const POST = route({ auth: false }, async ({ req, body }) => {
   const i = await body(recoveryStart);
@@ -18,13 +19,14 @@ export const POST = route({ auth: false }, async ({ req, body }) => {
     throw new ApiError(429, "Too many tries. Please wait an hour and try again.");
   }
   const user = await findUser(i.identifier);
-  if (user?.email) {
+  const to = user ? verifiedEmail(user) : null; // only a verified email can recover an account
+  if (user && to) {
     const code = sixDigitCode();
     const db = await getDb();
     const values = { codeHash: sha256(`${user.id}:${code}`), expiresAt: new Date(Date.now() + 15 * 60_000), attempts: 0 };
     await db.insert(t.emailCodes).values({ userId: user.id, ...values }).onConflictDoUpdate({ target: t.emailCodes.userId, set: values });
     const sent = await sendMail({
-      to: user.email,
+      to,
       subject: `${APP_NAME}: your code`,
       text: `Your code is ${code}\n\nIt works for 15 minutes.\nIf you did not ask for it, ignore this email. Your account is safe.`,
     });
