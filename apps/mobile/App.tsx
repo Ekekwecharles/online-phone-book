@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import * as Contacts from "expo-contacts";
 import * as BackgroundTask from "expo-background-task";
 import { APP_NAME } from "@phonebook/shared";
+import { startContactWatcher, stopContactWatcher } from "./modules/contact-watcher";
 import { api, setLoggedOutHandler } from "./src/api";
 import { registerForPush } from "./src/push";
 import { clearLogin, getToken, getUsername, setToken, setUsername } from "./src/storage";
@@ -28,6 +29,7 @@ export default function App() {
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const finishLogout = useCallback(async () => {
+    stopContactWatcher();
     await clearLogin();
     try {
       await BackgroundTask.unregisterTaskAsync(SYNC_TASK);
@@ -51,6 +53,7 @@ export default function App() {
     if (!user && user !== "") return;
     void runSync();
     void registerForPush();
+    startContactWatcher(); // Android: also save when contacts change and the app is closed
     BackgroundTask.registerTaskAsync(SYNC_TASK, { minimumInterval: 15 }).catch(() => {});
     const app = AppState.addEventListener("change", (s) => s === "active" && void runSync());
     const sub = Contacts.addContactsChangeListener(() => {
