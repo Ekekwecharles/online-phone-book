@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Phone Book",
+    "slug": "phone-book",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.example.phonebook"
+    },
+    "android": {
+      "package": "com.example.phonebook",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Phone Book reads your contacts to keep a safe copy online."
+        }
+      ],
+      "expo-secure-store",
+      "expo-background-task",
+      "expo-notifications"
+    ],
+    "extra": {
+      "apiUrl": "https://online-phone-book-moaa.vercel.app"
+    }
+  }
+}
