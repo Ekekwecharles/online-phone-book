@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { formatPhone, matchesQuery } from "@phonebook/shared";
+import { formatPhone, isCallable, matchesQuery } from "@phonebook/shared";
 import { Alert, Field } from "@/components/ui";
 import { api, goToLogin, useAutoLogout, type ApiResult } from "@/lib/client";
 import { btn, btnLight, btnPrimary, input } from "@/lib/ui";
@@ -52,11 +52,21 @@ export default function ContactsView() {
     const on = () => setOnline(true);
     const off = () => setOnline(false);
     setOnline(navigator.onLine);
+    // When you come back to this tab, load the newest contacts (for example, ones just saved on the phone).
+    let last = Date.now();
+    const back = () => {
+      if (document.visibilityState === "visible" && Date.now() - last > 15000) {
+        last = Date.now();
+        void load();
+      }
+    };
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
+    document.addEventListener("visibilitychange", back);
     return () => {
       window.removeEventListener("online", on);
       window.removeEventListener("offline", off);
+      document.removeEventListener("visibilitychange", back);
     };
   }, [load]);
 
@@ -102,7 +112,7 @@ export default function ContactsView() {
       <form method="post" onSubmit={save} className="space-y-4 rounded-3xl border border-gray-200 p-5">
         <h2 className="text-2xl font-extrabold text-brand-900">{edit.id ? "Change contact" : "Add a contact"}</h2>
         <Field id="name" label="Name" value={edit.name} onChange={(v) => setEdit({ ...edit, name: v })} required maxLength={100} />
-        <Field id="phone" label="Phone number" type="tel" inputMode="tel" value={edit.phone} onChange={(v) => setEdit({ ...edit, phone: v })} required />
+        <Field id="phone" label="Phone number or code" value={edit.phone} onChange={(v) => setEdit({ ...edit, phone: v })} required />
         {error && <Alert>{error}</Alert>}
         <div className="grid grid-cols-2 gap-3">
           <button type="button" onClick={() => { setEdit(null); setError(""); }} className={btnLight}>Cancel</button>
@@ -151,7 +161,7 @@ export default function ContactsView() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <button type="button" onClick={() => copy(c)} className={`${btn} border-2 border-brand-600 text-brand-700 hover:bg-brand-50`}>Copy</button>
-                  <a href={`tel:${c.phone}`} className={`${btn} bg-brand-600 text-white hover:bg-brand-700`}>Call</a>
+                  {isCallable(c.phone) && <a href={`tel:${c.phone}`} className={`${btn} bg-brand-600 text-white hover:bg-brand-700`}>Call</a>}
                 </div>
                 <div className="flex gap-5 text-base">
                   <button type="button" onClick={() => setEdit({ id: c.id, name: c.name, phone: c.phone })} className="min-h-11 font-bold text-brand-700 underline">Change</button>

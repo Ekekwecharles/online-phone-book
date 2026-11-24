@@ -22,7 +22,7 @@ const icons = {
 };
 
 const steps = [
-  { icon: icons.phone, title: "Get the app", text: `Install the ${APP} app on your phone. Make an account with a username or phone number and a password. No email needed.` },
+  { icon: icons.phone, title: "Get the app", text: `Install the ${APP} app on your phone. Create an account with a username or phone number and a password. No email needed.` },
   { icon: icons.sync, title: "Your contacts save online", text: "They save by themselves. Every time you save a new contact, it goes online too." },
   { icon: icons.globe, title: "Phone lost? Use any phone", text: `Borrow any phone or use any computer. Open the ${APP} website and log in. Find the contact. Copy or call the number. Done.` },
 ];
@@ -50,7 +50,10 @@ export default function Home() {
       <header className="sticky top-0 z-10 border-b border-gray-100 bg-white/95">
         <div className={`${wrap} flex h-16 items-center justify-between`}>
           <a href="/" className="text-2xl font-extrabold text-brand-600">{APP}</a>
-          <a href="/login" className="inline-flex min-h-11 items-center rounded-xl border-2 border-brand-600 px-5 font-bold text-brand-700 hover:bg-brand-50">Log in</a>
+          <nav className="flex items-center gap-4">
+            <a href="/pricing" className="font-bold text-brand-700 underline">Pricing</a>
+            <a href="/login" className="inline-flex min-h-11 items-center rounded-xl border-2 border-brand-600 px-5 font-bold text-brand-700 hover:bg-brand-50">Log in</a>
+          </nav>
         </div>
       </header>
 
@@ -169,6 +172,7 @@ export default function Home() {
         <div className={`${wrap} flex flex-col items-center gap-3 text-base text-gray-700 sm:flex-row sm:justify-between`}>
           <p>© {new Date().getFullYear()} {APP}</p>
           <nav className="flex gap-6">
+            <a href="/pricing" className="underline">Pricing</a>
             <a href="/privacy" className="underline">Privacy</a>
             <a href="/contact" className="underline">Contact</a>
           </nav>

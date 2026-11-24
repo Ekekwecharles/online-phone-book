@@ -1,5 +1,16 @@
-import type { ReactNode } from "react";
+"use client";
+import { useState, type ReactNode } from "react";
 import { card, input, label } from "@/lib/ui";
+
+function Eye({ off }: { off: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+      <circle cx="12" cy="12" r="3" />
+      {off && <path d="M3 3l18 18" />}
+    </svg>
+  );
+}
 
 export function Field(props: {
   id: string;
@@ -13,14 +24,17 @@ export function Field(props: {
   required?: boolean;
   maxLength?: number;
 }) {
+  const [visible, setVisible] = useState(false);
+  const isPassword = props.type === "password";
   return (
     <div>
       <label htmlFor={props.id} className={label}>{props.label}</label>
+      <div className="relative">
       <input
         id={props.id}
         name={props.id}
-        type={props.type ?? "text"}
-        className={input}
+        type={isPassword && visible ? "text" : props.type ?? "text"}
+        className={isPassword ? `${input} pr-14` : input}
         value={props.value}
         onChange={(e) => props.onChange(e.target.value)}
         autoComplete={props.autoComplete ?? "off"}
@@ -33,6 +47,18 @@ export function Field(props: {
         spellCheck={false}
         suppressHydrationWarning
       />
+      {isPassword && (
+        <button
+          type="button"
+          onClick={() => setVisible(!visible)}
+          aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
+          className="absolute right-1 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-xl text-gray-700 hover:text-brand-700"
+        >
+          <Eye off={visible} />
+        </button>
+      )}
+      </div>
       {props.hint && <p id={props.id + "-hint"} className="mt-1 text-base text-gray-700">{props.hint}</p>}
     </div>
   );

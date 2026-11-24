@@ -1,4 +1,4 @@
-import { normalizeAnyPhone } from "@phonebook/shared";
+import { normalizeContactValue } from "@phonebook/shared";
 
 // Pure logic. No phone or network code here, so it can be tested on a laptop.
 
@@ -28,7 +28,7 @@ const keyOf = (deviceId: string, phone: string) => `${deviceId}|${phone}`;
 export function devicePhones(contacts: DeviceContact[]): string[] {
   const out = new Set<string>();
   for (const c of contacts) for (const p of c.phones) {
-    const n = normalizeAnyPhone(p);
+    const n = normalizeContactValue(p);
     if (n) out.add(n);
   }
   return [...out];
@@ -57,8 +57,8 @@ export function planSync(opts: { contacts: DeviceContact[]; map: SyncMap; idFor:
 
   for (const c of contacts) {
     for (const raw of c.phones) {
-      const phone = normalizeAnyPhone(raw);
-      if (!phone) continue; // not a real number. Skip it.
+      const phone = normalizeContactValue(raw);
+      if (!phone) continue; // empty, or longer than 40 letters. Nothing to save.
       const name = c.name.trim().slice(0, 100) || phone;
       const id = idFor(phone);
       const key = keyOf(c.deviceId, phone);

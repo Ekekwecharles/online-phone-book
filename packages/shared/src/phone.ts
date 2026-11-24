@@ -35,11 +35,32 @@ export function matchesQuery(name: string, phone: string, q: string): boolean {
   const needle = q.trim().toLowerCase();
   if (!needle) return true;
   if (name.toLowerCase().includes(needle)) return true;
+  if (phone.toLowerCase().includes(needle)) return true; // codes and short numbers, as typed
   let digits = needle.replace(/\D/g, "");
   if (digits.length < 3) return false;
   if (digits.startsWith("234")) digits = digits.slice(3);
   else if (digits.startsWith("0")) digits = digits.slice(1);
   return digits.length >= 2 && phone.replace(/\D/g, "").includes(digits);
+}
+
+/**
+ * What a contact can hold. Today we keep everything: phone numbers, short codes, any text up to 40 letters.
+ * A real phone number is cleaned up (0803... becomes +234803...). Anything else is kept as typed.
+ * Later, keeping non-phone values (NIN, BVN, codes) may become a Pro feature. Change it here, in one place.
+ */
+export const MAX_VALUE_LENGTH = 40;
+export function normalizeContactValue(input: string): string | null {
+  if (typeof input !== "string") return null;
+  const phone = normalizeAnyPhone(input);
+  if (phone) return phone;
+  const s = input.trim().replace(/\s+/g, " ");
+  if (!s || s.length > MAX_VALUE_LENGTH) return null;
+  return s;
+}
+
+/** Is this value a real phone number we can call? (Codes and short numbers are not.) */
+export function isCallable(value: string): boolean {
+  return normalizeAnyPhone(value) !== null;
 }
 
 /** For contacts: keep any number, even a foreign one, as clean digits. */

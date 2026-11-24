@@ -35,8 +35,13 @@ describe("planSync", () => {
     expect(p.changes).toHaveLength(1);
   });
 
-  it("skips things that are not phone numbers", () => {
-    const p = run([c("1", "Bank", "abc"), c("2", "Ok", "08031234567")]);
+  it("saves short numbers and codes as typed, because for now we keep everything", () => {
+    const p = run([c("1", "Test", "09388"), c("2", "My BVN", "22123456789"), c("3", "Ok", "08031234567")]);
+    expect(p.changes.map((x) => x.phone)).toEqual(["09388", "22123456789", "+2348031234567"]);
+  });
+
+  it("skips empty numbers and values longer than 40 characters", () => {
+    const p = run([c("1", "Empty", "   "), c("2", "Long", "x".repeat(41)), c("3", "Ok", "08031234567")]);
     expect(p.changes).toHaveLength(1);
   });
 
@@ -92,7 +97,7 @@ describe("planSync", () => {
 
 describe("helpers", () => {
   it("devicePhones lists clean unique numbers", () => {
-    expect(devicePhones([c("1", "A", "08031234567", "+2348031234567", "x")])).toEqual(["+2348031234567"]);
+    expect(devicePhones([c("1", "A", "08031234567", "+2348031234567", "x")])).toEqual(["+2348031234567", "x"]);
   });
   it("uuidFromHex makes a stable uuid-shaped id", () => {
     const a = uuidFromHex("a".repeat(64));

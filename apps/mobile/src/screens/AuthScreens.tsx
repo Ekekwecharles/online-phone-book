@@ -27,7 +27,7 @@ export function LoginScreen({ go, onDone }: { go: (r: Route) => void; onDone: (t
       {err ? <Note kind="error">{err}</Note> : null}
       <Button title="Log in" onPress={submit} busy={busy} disabled={!id || !pw} />
       <Link title="I forgot my password" onPress={() => go("recover")} />
-      <Link title="Make a new account" onPress={() => go("signup")} />
+      <Link title="Create a new account" onPress={() => go("signup")} />
     </Screen>
   );
 }
@@ -67,7 +67,7 @@ export function SignupScreen({ go, onDone }: { go: (r: Route) => void; onDone: (
     );
   }
   return (
-    <Screen title="Make an account">
+    <Screen title="Create an account">
       <Field label="Username" value={username} onChangeText={setU} hint="Letters, numbers and _ only." />
       <Field label="Phone number (you can skip this)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" hint="You can also log in with it." />
       <Field label="Password" value={pw} onChangeText={setPw} secureTextEntry textContentType="newPassword" hint="At least 8 characters." />

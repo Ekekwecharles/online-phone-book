@@ -35,7 +35,7 @@ export default function LoginForm({ expired }: { expired: boolean }) {
         <a href="/recover" className="font-bold text-brand-700 underline">I forgot my password</a>
       </p>
       <p className="text-center">
-        New here? <a href="/signup" className="font-bold text-brand-700 underline">Make an account</a>
+        New here? <a href="/signup" className="font-bold text-brand-700 underline">Create a new account</a>
       </p>
     </form>
   );

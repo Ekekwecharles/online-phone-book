@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 
 // Light and simple on purpose: system fonts, no images, big tap targets, high contrast.
@@ -33,11 +33,45 @@ export function Button({ title, onPress, kind = "primary", disabled, busy }: { t
   );
 }
 
-export function Field({ label, hint, ...p }: TextInputProps & { label: string; hint?: string }) {
+/** An eye drawn with plain shapes (no icon library, no images). A slash across it means "hidden". */
+function EyeIcon({ hidden }: { hidden: boolean }) {
+  return (
+    <View style={{ width: 28, height: 28, alignItems: "center", justifyContent: "center" }}>
+      <View style={{ width: 26, height: 16, borderRadius: 13, borderWidth: 2.5, borderColor: c.muted, alignItems: "center", justifyContent: "center" }}>
+        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.muted }} />
+      </View>
+      {hidden ? <View style={{ position: "absolute", width: 30, height: 3, borderRadius: 2, backgroundColor: c.muted, transform: [{ rotate: "-45deg" }] }} /> : null}
+    </View>
+  );
+}
+
+export function Field({ label, hint, secureTextEntry, ...p }: TextInputProps & { label: string; hint?: string }) {
+  const [shown, setShown] = useState(false);
   return (
     <View style={{ gap: 6 }}>
       <Text style={s.label}>{label}</Text>
-      <TextInput {...p} accessibilityLabel={label} style={s.input} placeholderTextColor="#6b7280" autoCapitalize="none" autoCorrect={false} />
+      <View>
+        <TextInput
+          {...p}
+          secureTextEntry={secureTextEntry && !shown}
+          accessibilityLabel={label}
+          style={[s.input, secureTextEntry ? { paddingRight: 56 } : null]}
+          placeholderTextColor="#6b7280"
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+        {secureTextEntry ? (
+          <Pressable
+            onPress={() => setShown(!shown)}
+            accessibilityRole="button"
+            accessibilityLabel={shown ? "Hide password" : "Show password"}
+            hitSlop={4}
+            style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: 52, alignItems: "center", justifyContent: "center" }}
+          >
+            <EyeIcon hidden={shown} />
+          </Pressable>
+        ) : null}
+      </View>
       {hint ? <Text style={s.hint}>{hint}</Text> : null}
     </View>
   );

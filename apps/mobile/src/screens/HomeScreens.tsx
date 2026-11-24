@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FlatList, Linking, Text, TextInput, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { requestPermissionsAsync } from "expo-contacts";
-import { formatPhone, matchesQuery } from "@phonebook/shared";
+import { formatPhone, isCallable, matchesQuery } from "@phonebook/shared";
 import { api } from "../api";
 import { getStatus, onStatus, runSync, type SyncStatus } from "../sync";
 import { Button, Card, Field, Note, P, Screen, c } from "../ui";
@@ -143,7 +143,7 @@ export function ContactsScreen({ goSettings }: { goSettings: () => void }) {
           <Text style={{ fontSize: 20, color: c.muted }}>{formatPhone(item.phone)}</Text>
           <View style={{ flexDirection: "row", gap: 10 }}>
             <View style={{ flex: 1 }}><Button kind="light" title="Copy" onPress={() => void copy(item)} /></View>
-            <View style={{ flex: 1 }}><Button title="Call" onPress={() => void Linking.openURL(`tel:${item.phone}`)} /></View>
+            {isCallable(item.phone) ? <View style={{ flex: 1 }}><Button title="Call" onPress={() => void Linking.openURL(`tel:${item.phone}`)} /></View> : null}
           </View>
         </View>
       )}

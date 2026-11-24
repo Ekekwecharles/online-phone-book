@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { looksLikePhone, normalizeNgPhone, normalizeAnyPhone } from "./phone";
+import { looksLikePhone, normalizeNgPhone, normalizeContactValue } from "./phone";
 
 // Simple, plain-English messages.
 export const username = z
@@ -62,8 +62,8 @@ export const contactInput = z.object({
     .trim()
     .max(40)
     .transform((v, ctx) => {
-      const n = normalizeAnyPhone(v);
-      if (!n) ctx.addIssue({ code: "custom", message: "That phone number does not look right." });
+      const n = normalizeContactValue(v);
+      if (!n) ctx.addIssue({ code: "custom", message: "Type a number." });
       return n ?? "";
     }),
 });

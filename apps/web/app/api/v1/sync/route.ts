@@ -1,4 +1,4 @@
-import { normalizeAnyPhone, syncInput } from "@phonebook/shared";
+import { normalizeContactValue, syncInput } from "@phonebook/shared";
 import { json, route } from "@/lib/http";
 import { applyChange, changesSince } from "@/lib/contacts";
 
@@ -12,7 +12,7 @@ export const POST = route({ auth: true }, async ({ auth, body }) => {
   const serverTime = Date.now();
   let rejected = 0;
   for (const c of i.changes) {
-    const phone = c.phone === undefined ? undefined : normalizeAnyPhone(c.phone);
+    const phone = c.phone === undefined ? undefined : normalizeContactValue(c.phone);
     if (c.phone !== undefined && !phone) {
       rejected++; // a bad number. Skip it, keep going.
       continue;
