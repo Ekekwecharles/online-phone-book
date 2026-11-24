@@ -1,3 +1,5 @@
+import { LIMITS_ON } from "./config";
+
 /**
  * Nigerian phone numbers. Canonical form: "+234" + 10 digits, e.g. +2348031234567.
  * Accepts 0803..., 803..., 234803..., +234803..., with spaces, dashes, brackets.
@@ -49,10 +51,11 @@ export function matchesQuery(name: string, phone: string, q: string): boolean {
  * Later, keeping non-phone values (NIN, BVN, codes) may become a Pro feature. Change it here, in one place.
  */
 export const MAX_VALUE_LENGTH = 40;
-export function normalizeContactValue(input: string): string | null {
+export function normalizeContactValue(input: string, limitsOn: boolean = LIMITS_ON): string | null {
   if (typeof input !== "string") return null;
   const phone = normalizeAnyPhone(input);
   if (phone) return phone;
+  if (limitsOn) return null; // Free plan: real phone numbers only
   const s = input.trim().replace(/\s+/g, " ");
   if (!s || s.length > MAX_VALUE_LENGTH) return null;
   return s;
@@ -67,7 +70,8 @@ export function isCallable(value: string): boolean {
 export function normalizeAnyPhone(input: string): string | null {
   const ng = normalizeNgPhone(input);
   if (ng) return ng;
-  const s = input.trim().replace(/[\s\-().]/g, "");
-  if (/^\+\d{7,15}$/.test(s)) return s;
+  let s = input.trim().replace(/[\s\-().]/g, "");
+  if (s.startsWith("00")) s = "+" + s.slice(2); // 0049... is the same as +49...
+  if (/^\+[1-9]\d{6,14}$/.test(s)) return s;
   return null;
 }

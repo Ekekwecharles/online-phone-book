@@ -1,12 +1,10 @@
 import { and, eq, gte } from "drizzle-orm";
-import { matchesQuery } from "@phonebook/shared";
+import { FREE_CONTACT_LIMIT, LIMITS_ON, matchesQuery } from "@phonebook/shared";
 import { blindIndex, decrypt, encrypt } from "./crypto";
 import { getDb, t } from "./db";
 import { ApiError } from "./http";
 import { userKey } from "./accounts";
 import type { User } from "./session";
-
-export const MAX_CONTACTS = 5000; // keeps the free database small
 
 export type ContactOut = { id: string; name: string; phone: string; updatedAt: number };
 
@@ -64,8 +62,10 @@ export async function applyChange(
   if (existing) {
     await db.update(t.contacts).set(values).where(eq(t.contacts.id, c.id));
   } else {
-    const count = (await db.select({ id: t.contacts.id }).from(t.contacts).where(and(eq(t.contacts.userId, user.id), eq(t.contacts.deleted, false)))).length;
-    if (count >= MAX_CONTACTS) throw new ApiError(400, `You can save up to ${MAX_CONTACTS} contacts.`);
+    if (LIMITS_ON) {
+      const count = (await db.select({ id: t.contacts.id }).from(t.contacts).where(and(eq(t.contacts.userId, user.id), eq(t.contacts.deleted, false)))).length;
+      if (count >= FREE_CONTACT_LIMIT) throw new ApiError(400, `The Free plan saves up to ${FREE_CONTACT_LIMIT} contacts.`);
+    }
     await db.insert(t.contacts).values({ id: c.id, userId: user.id, ...values });
   }
   return true;
