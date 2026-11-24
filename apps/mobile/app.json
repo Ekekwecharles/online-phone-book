@@ -8,17 +8,23 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.example.phonebook"
+      "bundleIdentifier": "com.online.phonebook"
     },
     "android": {
-      "package": "com.example.phonebook",
+      "package": "com.online.phonebook",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.READ_CONTACTS"
+      ],
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -35,7 +41,11 @@
       "expo-notifications"
     ],
     "extra": {
-      "apiUrl": "https://online-phone-book-moaa.vercel.app"
-    }
+      "apiUrl": "https://online-phone-book-moaa.vercel.app",
+      "eas": {
+        "projectId": "e40fecdc-fd8f-4953-84fc-95fa174b7ed8"
+      }
+    },
+    "owner": "snowaregadgets"
   }
 }
