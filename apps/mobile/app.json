@@ -36,6 +36,15 @@
           "contactsPermission": "Phone Book reads your contacts to keep a safe copy online."
         }
       ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
+        }
+      ],
       "expo-secure-store",
       "expo-background-task",
       "expo-notifications"
