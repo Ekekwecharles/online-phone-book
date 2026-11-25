@@ -5,7 +5,8 @@ import { requestPermissionsAsync } from "expo-contacts";
 import { formatPhone, isCallable, matchesQuery } from "@phonebook/shared";
 import { api } from "../api";
 import { getStatus, onStatus, runSync, type SyncStatus } from "../sync";
-import { Button, Card, Field, Note, P, Screen, c } from "../ui";
+import { setToken } from "../storage";
+import { Button, Card, CodeBox, Field, Note, P, Screen, c } from "../ui";
 
 const when = (ms: number) => new Date(ms).toLocaleString("en-NG", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 
@@ -186,6 +187,13 @@ export function SettingsScreen({ username, onLogout, onLogoutAll, onDeleted }: {
   const [del, setDel] = useState(false);
   const [pw, setPw] = useState("");
   const [delErr, setDelErr] = useState("");
+  const [curPw, setCurPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [pwBusy, setPwBusy] = useState(false);
+  const [pwMsg, setPwMsg] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
+  const [codePw, setCodePw] = useState("");
+  const [codeErr, setCodeErr] = useState("");
+  const [newCode, setNewCode] = useState("");
 
   useEffect(() => {
     void api<{ email: string | null; emailChecked: boolean }>("GET", "/me").then((r) => {
@@ -223,6 +231,26 @@ export function SettingsScreen({ username, onLogout, onLogoutAll, onDeleted }: {
     const r = await api("POST", "/me/email/send");
     setMsg(r.ok ? { kind: "ok", text: "We sent a new code." } : { kind: "error", text: r.error });
   }
+  async function changePassword() {
+    setPwBusy(true);
+    setPwMsg(null);
+    const r = await api<{ token?: string }>("POST", "/me/password", { current: curPw, newPassword: newPw });
+    setPwBusy(false);
+    if (!r.ok) return setPwMsg({ kind: "error", text: r.error });
+    // Every other login ended. Keep this phone logged in with the new key.
+    if (r.data.token) await setToken(r.data.token);
+    setCurPw("");
+    setNewPw("");
+    setPwMsg({ kind: "ok", text: "Your password is changed. Other phones and browsers were logged out." });
+  }
+  async function makeCode() {
+    setCodeErr("");
+    const r = await api<{ recoveryCode: string }>("POST", "/me/recovery-code", { password: codePw });
+    if (r.ok) {
+      setNewCode(r.data.recoveryCode);
+      setCodePw("");
+    } else setCodeErr(r.error);
+  }
   async function remove() {
     setDelErr("");
     const r = await api("DELETE", "/me", { password: pw });
@@ -246,6 +274,28 @@ export function SettingsScreen({ username, onLogout, onLogoutAll, onDeleted }: {
         <Field label="Email" value={email} onChangeText={setEmail} keyboardType="email-address" hint="So we can tell you if someone opens your account. To remove it, clear the box and save." />
         {msg ? <Note kind={msg.kind}>{msg.text}</Note> : null}
         <Button kind="light" title="Save email" onPress={saveEmail} busy={busy} />
+      </Card>
+      <Card title="Change password">
+        <Field label="Old password" value={curPw} onChangeText={setCurPw} secureTextEntry />
+        <Field label="New password" value={newPw} onChangeText={setNewPw} secureTextEntry hint="At least 8 characters." />
+        {pwMsg ? <Note kind={pwMsg.kind}>{pwMsg.text}</Note> : null}
+        <Button kind="light" title="Change my password" onPress={changePassword} busy={pwBusy} disabled={!curPw || newPw.length < 8} />
+      </Card>
+      <Card title="Recovery code">
+        {newCode ? (
+          <>
+            <Note>Write this code on paper now. We show it only one time. The old code does not work any more.</Note>
+            <CodeBox code={newCode} />
+            <Button title="I wrote it down" onPress={() => setNewCode("")} />
+          </>
+        ) : (
+          <>
+            <P>Lost your recovery code? Make a new one. The old one will stop working.</P>
+            <Field label="Your password" value={codePw} onChangeText={setCodePw} secureTextEntry />
+            {codeErr ? <Note kind="error">{codeErr}</Note> : null}
+            <Button kind="light" title="Make a new code" onPress={makeCode} disabled={!codePw} />
+          </>
+        )}
       </Card>
       <Card title="Log out">
         <Button kind="light" title="Log out on this phone" onPress={onLogout} />
