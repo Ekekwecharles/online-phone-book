@@ -12,7 +12,7 @@ export async function api<T = Record<string, unknown>>(method: string, path: str
   try {
     const res = await fetch("/api/v1" + path, {
       method,
-      headers: body === undefined ? {} : { "content-type": "application/json" },
+      headers: body === undefined && method === "GET" ? {} : { "content-type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
       credentials: "same-origin",
       cache: "no-store",

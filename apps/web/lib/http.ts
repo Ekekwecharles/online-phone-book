@@ -36,8 +36,11 @@ export function checkSameSite(req: Request) {
   } else if (req.headers.get("sec-fetch-site") === "cross-site") {
     throw new ApiError(403, "Something is not right. Please reload the page.");
   }
+  // Only a request that carries a body must say it is JSON. A DELETE with no body sends no length at all.
   const ct = req.headers.get("content-type") ?? "";
-  if (req.headers.get("content-length") !== "0" && !ct.includes("application/json")) {
+  const length = req.headers.get("content-length");
+  const hasBody = (length !== null && length !== "0") || req.headers.has("transfer-encoding");
+  if (hasBody && !ct.includes("application/json")) {
     throw new ApiError(415, "Something is not right. Please reload the page.");
   }
 }

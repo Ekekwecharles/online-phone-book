@@ -1,5 +1,5 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { card, input, label } from "@/lib/ui";
 
 function Eye({ off }: { off: boolean }) {
@@ -60,6 +60,54 @@ export function Field(props: {
       )}
       </div>
       {props.hint && <p id={props.id + "-hint"} className="mt-1 text-base text-gray-700">{props.hint}</p>}
+    </div>
+  );
+}
+
+/** A box that asks "are you sure?". Replaces the browser's pop-up. Esc or Cancel closes it. */
+export function ConfirmDialog(props: {
+  title: string;
+  children: ReactNode;
+  confirmText: string;
+  danger?: boolean;
+  busy?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const ref = useRef<HTMLButtonElement>(null);
+  const cancel = useRef(props.onCancel);
+  cancel.current = props.onCancel;
+  useEffect(() => {
+    ref.current?.focus(); // the safe choice is highlighted first
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && cancel.current();
+    document.addEventListener("keydown", esc);
+    return () => document.removeEventListener("keydown", esc);
+  }, []);
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center" onClick={props.onCancel}>
+      <div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        className="w-full max-w-md space-y-4 rounded-3xl bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="confirm-title" className="text-2xl font-extrabold text-brand-900">{props.title}</h2>
+        <div className="text-gray-700">{props.children}</div>
+        <div className="grid grid-cols-2 gap-3">
+          <button ref={ref} type="button" onClick={props.onCancel} className="inline-flex min-h-14 items-center justify-center rounded-2xl border-2 border-brand-600 px-4 text-lg font-bold text-brand-700 hover:bg-brand-50">
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={props.onConfirm}
+            disabled={props.busy}
+            className={`inline-flex min-h-14 items-center justify-center rounded-2xl px-4 text-lg font-bold text-white disabled:opacity-60 ${props.danger ? "bg-red-800 hover:bg-red-900" : "bg-brand-600 hover:bg-brand-700"}`}
+          >
+            {props.busy ? "Please wait…" : props.confirmText}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
